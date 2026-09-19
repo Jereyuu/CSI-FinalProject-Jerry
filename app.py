@@ -150,12 +150,33 @@ a { color: #c91528 !important; }
     font-size: .75rem;
     line-height: 1.45;
 }
+/* Make general text black */
+.stApp,
+.stApp p,
+.stApp span,
+.stApp div,
+.stApp label {
+    color: #000000;
+}
+[data-testid="stChatMessage"] {
+    color: #000000;
+}
+
+[data-testid="stChatMessage"] p {
+    color: #000000;
+}
+
+/* "Thinking..." spinner */
+[data-testid="stSpinner"] {
+    color: #000000;
+}
+
+[data-testid="stSpinner"] p {
+    color: #000000;
+}
+
 .answer {
-    color: #000000 !important;
-    background: #ffffff;
-    padding: 16px 20px;
-    line-height: 1.6;
-    font-size: 1rem;
+    color: #000000;
 }
 #MainMenu, footer { visibility: hidden; }
 </style>
