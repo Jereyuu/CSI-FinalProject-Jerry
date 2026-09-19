@@ -302,7 +302,7 @@ MEDICAL_KEYWORDS = {
 
     "drowning": [
         "drowning", "drowned", "near drowning",
-        "water accident"
+        "water accident", "drown"
     ],
 
     "poisoning": [
