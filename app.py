@@ -347,19 +347,27 @@ question = st.chat_input("Ask MedBot anything about health or first aid...")
 question = question or st.session_state.pop("pending_question", None)
 
 if question:
-    st.session_state.messages.append({"role":"user","content":question})
+    st.session_state.messages.append({"role": "user", "content": question})
+
     with st.chat_message("user"):
         st.markdown(question)
+
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             try:
                 answer = generate_medbot_response(question)
-            except Exception:
-                answer = "Sorry, I couldn't generate a response right now. Please check your Gemini API key and internet connection."
+            except Exception as e:
+                st.error(f"Gemini Error: {e}")
+                answer = "Sorry, I couldn't generate a response right now."
+
         st.markdown(
-    f'<div class="answer">{answer}</div>',
-    unsafe_allow_html=True
-)
-    st.session_state.messages.append({"role":"assistant","content":answer})
+            f'<div class="answer">{answer}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": answer
+    })
 
 st.markdown('<div class="disclaimer">MedBot can make mistakes. Information provided is educational and should not replace professional medical advice. If you think someone is experiencing an emergency, contact your local emergency service or get immediate help from a nearby responsible adult/person.</div>', unsafe_allow_html=True)
