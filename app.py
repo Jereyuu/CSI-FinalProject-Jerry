@@ -263,7 +263,7 @@ def check_for_emergency(question: str) -> bool:
         return True
     try:
         r = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=f"""Decide whether this health question describes a POTENTIAL MEDICAL EMERGENCY.
 Consider the meaning even if it is not English. Return ONLY YES or NO.
 Question: {question}"""
@@ -275,7 +275,7 @@ Question: {question}"""
 def emergency_response(question: str) -> str:
     try:
         r = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=f"""{SYSTEM_INSTRUCTION}
 The user may be describing a medical emergency.
 Respond briefly and calmly. Tell them to contact their local emergency service or get immediate help from a nearby responsible adult/person. Do not diagnose. Answer in the same language when possible.
@@ -300,7 +300,7 @@ Relevant first-aid-kit information:
 {get_kit_context(question)}
 
 Give a useful, understandable answer. Do not diagnose. Only mention kit items that appear above. Clearly say when professional medical assessment may be needed."""
-    r = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    r = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
     return r.text.strip()
 
 #Session State
