@@ -150,33 +150,29 @@ a { color: #c91528 !important; }
     font-size: .75rem;
     line-height: 1.45;
 }
-/* Make general text black */
-.stApp,
-.stApp p,
-.stApp span,
-.stApp div,
-.stApp label {
-    color: #000000;
-}
-[data-testid="stChatMessage"] {
-    color: #000000;
-}
-
+/* Chat message text */
 [data-testid="stChatMessage"] p {
-    color: #000000;
+    color: #000000 !important;
 }
 
-/* "Thinking..." spinner */
-[data-testid="stSpinner"] {
-    color: #000000;
-}
-
-[data-testid="stSpinner"] p {
-    color: #000000;
-}
-
+/* Your answer text */
 .answer {
-    color: #000000;
+    color: #000000 !important;
+}
+
+/* Thinking spinner text */
+[data-testid="stSpinner"] p {
+    color: #000000 !important;
+}
+
+/* Chat input text */
+[data-testid="stChatInput"] textarea {
+    color: #000000 !important;
+}
+
+/* Chat input placeholder */
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #000000 !important;
 }
 #MainMenu, footer { visibility: hidden; }
 </style>
