@@ -226,6 +226,183 @@ MEDICAL_KNOWLEDGE_DATA = [
 ]
 medical_knowledge_df = pd.DataFrame(MEDICAL_KNOWLEDGE_DATA)
 
+# Keywords users might type that map to the built-in medical categories.
+MEDICAL_KEYWORDS = {
+    "wound": [
+        "cut", "cuts", "scrape", "scrapes", "abrasion",
+        "wound", "wounds", "minor wound"
+    ],
+
+    "bleeding": [
+        "bleeding", "bleed", "blood", "bleeds"
+    ],
+
+    "burn": [
+        "burn", "burned", "burnt", "scald", "scalded"
+    ],
+
+    "sprain_or_strain": [
+        "sprain", "sprained", "strain", "strained",
+        "twisted", "twist", "swelling", "swollen"
+    ],
+
+    "fracture_or_injury": [
+        "broken bone", "fracture", "fractured",
+        "serious injury", "broken"
+    ],
+
+    "nosebleed": [
+        "nosebleed", "nose bleed", "nose bleeding"
+    ],
+
+    "eye_problem": [
+        "eye", "eye irritation", "dust in eye",
+        "something in my eye", "foreign object eye"
+    ],
+
+    "bite_or_sting": [
+        "bite", "sting", "insect bite", "bug bite"
+    ],
+
+    "animal_bite": [
+        "dog bite", "cat bite", "animal bite"
+    ],
+
+    "splinter": [
+        "splinter", "thorn"
+    ],
+
+    "blister": [
+        "blister"
+    ],
+
+    "heat_illness": [
+        "heat exhaustion", "overheating",
+        "overheated", "heat illness"
+    ],
+
+    "hypothermia": [
+        "hypothermia", "very cold", "cold exposure",
+        "too cold"
+    ],
+
+    "fainting": [
+        "faint", "fainted", "fainting",
+        "passed out", "dizzy", "dizziness"
+    ],
+
+    "seizure": [
+        "seizure", "seizures", "convulsion", "convulsions"
+    ],
+
+    "choking": [
+        "choking", "choke", "can't breathe",
+        "cannot breathe", "airway blocked"
+    ],
+
+    "drowning": [
+        "drowning", "drowned", "near drowning",
+        "water accident"
+    ],
+
+    "poisoning": [
+        "poison", "poisoning", "poisoned",
+        "toxic", "swallowed"
+    ],
+
+    "head_injury": [
+        "head injury", "head bump", "hit my head",
+        "concussion", "bumped my head"
+    ],
+
+    "wound_infection": [
+        "infected wound", "infection", "infected",
+        "pus", "redness", "spreading redness"
+    ],
+
+    "minor_pain": [
+        "minor pain", "small pain", "discomfort"
+    ],
+
+    "recovery": [
+        "recovery", "healing", "recovering"
+    ],
+}
+
+KIT_KEYWORDS = {
+    "Adhesive Bandages / Band-Aids": [
+        "bandaid", "band aid", "band-aid",
+        "adhesive bandage", "adhesive bandages"
+    ],
+
+    "Sterile Gauze Pads": [
+        "gauze", "gauze pad", "gauze pads"
+    ],
+
+    "Roller / Crepe Bandages": [
+        "roller bandage", "crepe bandage",
+        "crepe", "roller bandages"
+    ],
+
+    "Triangular Bandages": [
+        "triangular bandage", "triangle bandage"
+    ],
+
+    "Non-Stick Wound Dressings": [
+        "non-stick dressing", "non stick dressing",
+        "wound dressing"
+    ],
+
+    "Medical Tape": [
+        "medical tape", "tape"
+    ],
+
+    "Antiseptic wipes or solution": [
+        "antiseptic", "antiseptic wipe",
+        "antiseptic wipes"
+    ],
+
+    "Saline solution": [
+        "saline", "saline solution"
+    ],
+
+    "Antibiotic ointment": [
+        "antibiotic ointment", "ointment"
+    ],
+
+    "Disposable non-latex (nitrile) gloves": [
+        "gloves", "nitrile gloves"
+    ],
+
+    "Scissors": [
+        "scissors"
+    ],
+
+    "Tweezers": [
+        "tweezers", "tweezer"
+    ],
+
+    "CPR face mask/shield": [
+        "cpr mask", "cpr face mask",
+        "face shield", "cpr shield"
+    ],
+
+    "Instant cold pack": [
+        "cold pack", "ice pack", "instant cold pack"
+    ],
+
+    "Emergency thermal blanket": [
+        "thermal blanket", "emergency blanket"
+    ],
+
+    "Flashlight": [
+        "flashlight", "torch"
+    ],
+
+    "Notepad and pen": [
+        "notepad", "pen", "notes"
+    ],
+}
 STOPWORDS = {"a","an","and","are","am","at","be","been","but","by","can","could","do","does","for","from","get","got","had","has","have","how","i","if","in","is","it","me","my","of","on","or","should","that","the","this","to","was","what","when","where","with","would","you","your"}
 
 def normalize_text(text: str) -> str:
@@ -320,6 +497,119 @@ Give a useful, understandable answer. Do not diagnose. Only mention kit items th
     r = client.models.generate_content(model="gemini-3.6-flash", contents=prompt)
     return r.text.strip()
 
+def mock_medbot_response(question: str) -> str:
+    text = normalize_text(question)
+
+    # EMERGENCY ALWAYS COMES FIRST
+    emergency_categories = {
+        "drowning",
+        "choking",
+        "poisoning",
+        "seizure",
+        "fracture_or_injury",
+        "head_injury",
+        "fainting",
+        "heat_illness",
+        "hypothermia",
+    }
+
+    matched_categories = []
+
+    for category, keywords in MEDICAL_KEYWORDS.items():
+        if any(keyword in text for keyword in keywords):
+            matched_categories.append(category)
+
+    # Severe bleeding gets emergency priority.
+    if "bleeding" in matched_categories:
+        if any(word in text for word in [
+            "severe", "heavy", "uncontrolled",
+            "won't stop", "doesn't stop"
+        ]):
+            return (
+                "🚨 This may be an emergency.\n\n"
+                "Please call your local emergency service and "
+                "get immediate help from a responsible adult or "
+                "nearby person.\n\n"
+                "Do not rely on MedBot alone in a serious emergency."
+            )
+
+    # Specific built-in emergency categories.
+    if any(category in emergency_categories for category in matched_categories):
+        return (
+            "🚨 This may be an emergency.\n\n"
+            "Please call your local emergency service and "
+            "get immediate help from a responsible adult or "
+            "nearby person.\n\n"
+            "Do not rely on MedBot alone in a serious emergency."
+        )
+        
+
+    # GET MEDICAL KNOWLEDGE
+    response_parts = []
+
+    for category in matched_categories[:2]:
+        matches = medical_knowledge_df[
+            medical_knowledge_df["category"] == category
+        ]
+
+        for _, row in matches.iterrows():
+            response_parts.append(
+                f"### {row['situation'].title()}\n\n"
+                f"**What to do:** {row['what_to_do']}\n\n"
+                f"**What not to do:** {row['what_not_to_do']}\n\n"
+                f"**When to seek help:** {row['when_to_seek_help']}"
+            )
+
+
+    # GET FIRST-AID-KIT ITEMS
+    matched_kit_items = []
+
+    for item, keywords in KIT_KEYWORDS.items():
+        if any(keyword in text for keyword in keywords):
+            matched_kit_items.append(item)
+
+    if matched_kit_items:
+        kit_section = "### Relevant first-aid-kit items\n\n"
+
+        for item in matched_kit_items[:4]:
+
+            # Find the actual description from FIRST_AID_ITEMS
+            for kit_item, description in FIRST_AID_ITEMS:
+                if kit_item == item:
+                    kit_section += (
+                        f"**{kit_item}** — {description}\n\n"
+                    )
+                    break
+
+        response_parts.append(kit_section)
+
+    
+    # NOTHING MATCHED
+
+    if not response_parts:
+        return (
+            "I'm temporarily using MedBot's built-in first-aid "
+            "knowledge because the AI service is unavailable.\n\n"
+            "I couldn't find a specific match in my built-in "
+            "medical or first-aid-kit knowledge.\n\n"
+            "Try mentioning the specific problem or item, such as "
+            "bleeding, a burn, a sprain, gauze, or a Band-Aid."
+        )
+
+    
+    # FINAL RESPONSE
+
+    return (
+        "I'm temporarily using MedBot's built-in knowledge "
+        "because the AI service is unavailable.\n\n"
+        + "\n\n".join(response_parts)
+        + "\n\n"
+        "⚠️ This is educational first-aid information, not a "
+        "diagnosis. If symptoms are severe, worsening, or "
+        "concerning, get help from a responsible adult or "
+        "medical professional."
+    )
+
 #Session State
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -375,7 +665,7 @@ if question:
                 answer = generate_medbot_response(question)
             except Exception as e:
                 st.error(f"Gemini Error: {e}")
-                answer = "Sorry, I couldn't generate a response right now."
+                answer = mock_medbot_response(question)
 
         st.markdown(
             f'<div class="answer">{answer}</div>',
